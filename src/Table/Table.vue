@@ -42,6 +42,7 @@
           <l-table-data
             :rows="rows"
             :columns="columns"
+            :no-records="noRecords"
             :editable="editable"
             :grouping="grouping">
           </l-table-data>
@@ -119,7 +120,7 @@ export default {
 
   computed: {
     hasBodySlot () {
-      return this.$scopedSlots
+      return _.isEmpty(this.$scopedSlots)
     },
     groupingColumn () {
       let id = this.grouping[this.groupingIndex]
@@ -157,17 +158,21 @@ export default {
 
   methods: {
     getRecords () {
-      return axios.get(`${this.datasource.url}?_start=0&_limit=${this.pagination.limit}`)
-        .then((response) => {
-          this.response.data = response.data
+      // Placeholder for grouping
+      this.grouping.push(this.columns[1].id)
+      this.grouping.push(this.columns[0].id)
 
-          // Placeholder for grouping
-          this.grouping.push(this.columns[1].id)
-          this.grouping.push(this.columns[0].id)
-        })
-        .catch((error) => {
-          this.response.errors = error
-        })
+      if (this.datasource.url) {
+        return axios.get(`${this.datasource.url}?_start=0&_limit=${this.pagination.limit}`)
+          .then((response) => {
+            this.response.data = response.data
+          })
+          .catch((error) => {
+            this.response.errors = error
+          })
+      }
+
+      this.response.data = this.datasource.records
     },
     sortTable (column) {
       this.sort.by = column.value

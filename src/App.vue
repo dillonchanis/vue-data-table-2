@@ -1,17 +1,22 @@
 <template>
   <div id="app">
-    <l-table :columns="columns" :datasource="datasource">
+    <!-- <l-table :columns="columns" :datasource="datasource">
       <template slot-scope="props">
         <td>{{ props.row.id }}</td>
         <td>{{ props.row.name }}</td>
         <td>{{ props.row.email }}</td>
       </template>
+    </l-table> -->
+    <hr />
+    <l-table :columns="columns" :datasource="datasource">
     </l-table>
   </div>
 </template>
 
 <script>
+import axios from 'axios'
 import LTable from './Table/Table'
+
 export default {
   name: 'app',
   components: {
@@ -24,10 +29,19 @@ export default {
         { id: 2, label: 'Name', value: 'name', title: 'Name' },
         { id: 3, label: 'Email', value: 'email', title: 'Email' }
       ],
+      // datasource: {
+      //   url: 'https://jsonplaceholder.typicode.com/comments'
+      // }
       datasource: {
-        url: 'https://jsonplaceholder.typicode.com/comments'
+        records: []
       }
     }
+  },
+  mounted () {
+    axios.get('https://jsonplaceholder.typicode.com/comments?_start=0&_limit=25')
+      .then(response => {
+        this.datasource.records = response.data
+      })
   }
 }
 </script>
