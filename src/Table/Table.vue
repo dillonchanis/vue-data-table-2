@@ -8,9 +8,9 @@
     <table role="grid" class="lunar-table">
       <thead class="lunar-table__head">
         <tr role="row">
-          <template v-for="(group, index) in groupingRows">
+          <!-- <template v-for="(group, index) in groupingRows">
             <th :key="group.id">&nbsp;</th>
-          </template>
+          </template> -->
           <th v-for="column in columns"
               :key="column.value"
               class="lunar-table__head-item"
@@ -29,26 +29,21 @@
           </td>
         </tr>
 
-        <template v-if="hasBodySlot">
+        <!-- <template v-if="hasBodySlot">
           <tr v-for="row in rows" :key="row.id">
             <template v-for="(group, index) in groupingRows">
               <td :key="group.id">&nbsp;</td>
             </template>
             <slot :row="row"></slot>
           </tr>
-        </template>
-
-        <template v-else>
-          <l-table-data
-            :rows="rows"
-            :columns="columns"
-            :no-records="noRecords"
-            :editable="editable"
-            :grouping="grouping">
-          </l-table-data>
-        </template>
-
+        </template> -->
       </tbody>
+      <table-row-creator
+        :columns="columns"
+        :editable="editable"
+        :grouping="grouping"
+        :grouping-column="groupingColumn"
+        :rows="rows" />
     </table>
   </div>
 </template>
@@ -57,13 +52,19 @@
 import _ from 'lodash'
 import axios from 'axios'
 
-import LTableData from './components/TableData'
+import LTableCollection from './components/TableCollection'
+import LTableRow from './components/TableRow'
+import LTableCell from './components/TableDataCell'
+import TableRowCreator from './components/TableRowCreator'
 
 export default {
   name: 'LunarTable',
 
   components: {
-    LTableData
+    LTableRow,
+    LTableCollection,
+    LTableCell,
+    TableRowCreator
   },
 
   props: {
@@ -85,6 +86,10 @@ export default {
     limit: {
       type: Number,
       default: 25
+    },
+    index: {
+      type: Number,
+      default: 0
     },
     noRecords: {
       type: String,
@@ -122,19 +127,22 @@ export default {
     hasBodySlot () {
       return _.isEmpty(this.$scopedSlots)
     },
-    groupingColumn () {
-      let id = this.grouping[this.groupingIndex]
-      return this.columns.find(column => column.id === id)
+    groupable () {
+      return this.index < this.grouping.length
     },
     groups () {
-      let id = this.groupingColumn.id
-      return _.groupBy(this.rows, row => row[id])
+      const value = this.groupingColumn.value
+      return _.groupBy(this.rows, row => row[value])
+    },
+    groupingColumn () {
+      const value = this.grouping[this.index]
+      return this.columns.find(column => column.value === value)
     },
     groupingRows () {
-      return this.grouping.map(columnId => this.columns.find(column => column.id === columnId))
+      return this.grouping.map(columnVal => this.columns.find(column => column.value === columnVal))
     },
     rows () {
-      let data = this.response.data
+      let data = this.response.data.length ? this.response.data : this.datasource.records
 
       data = data.filter(row => {
         return Object.keys(row).some(key => {
@@ -159,10 +167,11 @@ export default {
   methods: {
     getRecords () {
       // Placeholder for grouping
-      this.grouping.push(this.columns[1].id)
-      this.grouping.push(this.columns[0].id)
+      this.grouping.push(this.columns[1].value)
+      this.grouping.push(this.columns[2].value)
 
       if (this.datasource.url) {
+        console.log('url')
         return axios.get(`${this.datasource.url}?_start=0&_limit=${this.pagination.limit}`)
           .then((response) => {
             this.response.data = response.data
@@ -171,8 +180,6 @@ export default {
             this.response.errors = error
           })
       }
-
-      this.response.data = this.datasource.records
     },
     sortTable (column) {
       this.sort.by = column.value

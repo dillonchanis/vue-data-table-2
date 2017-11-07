@@ -3,7 +3,7 @@
     <input type="text" class="lunar-table__input" v-model="row[column.id]">
   </td>
   <td v-else>
-    {{ row[column.id] }}
+    {{ row[column.value] }}
   </td>
 </template>
 
