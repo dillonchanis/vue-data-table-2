@@ -5,11 +5,11 @@
         &times; {{ group.label }}
       </div>
     </div>
-    <table role="grid" class="lunar-table">
+    <table role="grid" class="lunar-table" :aria-colcount="columns.length" :aria-rowcount="rows.length">
       <thead class="lunar-table__head">
         <tr role="row">
           <!-- <template v-for="(group, index) in groupingRows">
-            <th :key="group.id">&nbsp;</th>
+            <th role="presentation" :key="group.id">&nbsp;</th>
           </template> -->
           <th v-for="column in columns"
               :key="column.value"
@@ -23,7 +23,7 @@
       <tbody class="lunar-table__body">
 
         <tr v-for="(group, index) in groupingRows" role="row" class="lunar-grouping__row" :key="group.id">
-          <td v-for="i in index" :key="i">&nbsp;</td>
+          <td v-for="i in index" role="presentation" :key="i">&nbsp;</td>
           <td :colspan="columns.length">
             {{ group.label }}
           </td>
@@ -42,7 +42,6 @@
         :columns="columns"
         :editable="editable"
         :grouping="grouping"
-        :grouping-column="groupingColumn"
         :rows="rows" />
     </table>
   </div>
@@ -126,17 +125,6 @@ export default {
   computed: {
     hasBodySlot () {
       return _.isEmpty(this.$scopedSlots)
-    },
-    groupable () {
-      return this.index < this.grouping.length
-    },
-    groups () {
-      const value = this.groupingColumn.value
-      return _.groupBy(this.rows, row => row[value])
-    },
-    groupingColumn () {
-      const value = this.grouping[this.index]
-      return this.columns.find(column => column.value === value)
     },
     groupingRows () {
       return this.grouping.map(columnVal => this.columns.find(column => column.value === columnVal))

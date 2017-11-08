@@ -37,26 +37,39 @@ export default {
       return this.index < this.grouping.length
     },
     groups () {
-      const value = this.groupingColumn.value
+      const value = this.currentGrouping.value
       return groupBy(this.rows, row => row[value])
     },
-    groupingColumn () {
+    currentGrouping () {
       const value = this.grouping[this.index]
       return this.columns.find(column => column.value === value)
     }
   },
 
   methods: {
-    renderCells (h) {
+    createTableRow (h) {
       return (
-        <tbody>
-          {
-            this.rows.length < 1
-              ? this.renderEmptyCell(h)
-              : this.mapRows(h)
-          }
-        </tbody>
+        <tr>
+          {this.rows.map(row => {
+            return this.renderCell(h, row)
+          })}
+        </tr>
       )
+    },
+    renderCells (h) {
+      return Object.keys(this.groups).map((key, i) => {
+        const data = this.groups[key]
+
+        return (
+          <l-table-cell col-span="100%"  />
+          <lunar-row-c
+            editable={this.editable}
+            rows={data}
+            index={this.index + 1}
+            grouping={this.grouping}
+            columns={this.columns} />
+        )
+      })
     },
     renderEmptyCell (h) {
       return (
@@ -70,18 +83,16 @@ export default {
         return <l-table-cell key={column.id} column={column} row={row} editable={this.editable} />
       })
     },
-    mapRows (h) {
-      return this.rows.map((row, index) => {
-        return (
-          <tr key={row.id}>
-            {this.renderCell(h, row)}
-          </tr>
-        )
-      })
+    renderResultSet (h) {
+      return this.rows.length < 1
+        ? this.renderEmptyCell(h)
+        : this.createTableRow(h)
     }
   },
 
   render (h) {
-    return this.renderCells(h)
+    return this.groupable
+            ? this.renderCells(h)
+            : this.renderResultSet(h)
   }
 }

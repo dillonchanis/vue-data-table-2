@@ -1,8 +1,8 @@
 <template>
-  <td v-if="editable" class="lunar-table__editable-cell">
+  <td v-if="editable" class="lunar-table__editable-cell" :colspan="colSpan">
     <input type="text" class="lunar-table__input" v-model="row[column.id]">
   </td>
-  <td v-else>
+  <td v-else :colspan="colSpan">
     {{ row[column.value] }}
   </td>
 </template>
@@ -21,6 +21,9 @@ export default {
     },
     row: {
       type: Object
+    },
+    colSpan: {
+      type: String
     }
   }
 }
