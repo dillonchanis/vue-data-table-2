@@ -21,28 +21,12 @@
         </tr>
       </thead>
       <tbody class="lunar-table__body">
-
-        <tr v-for="(group, index) in groupingRows" role="row" class="lunar-grouping__row" :key="group.id">
-          <td v-for="i in index" role="presentation" :key="i">&nbsp;</td>
-          <td :colspan="columns.length">
-            {{ group.label }}
-          </td>
-        </tr>
-
-        <!-- <template v-if="hasBodySlot">
-          <tr v-for="row in rows" :key="row.id">
-            <template v-for="(group, index) in groupingRows">
-              <td :key="group.id">&nbsp;</td>
-            </template>
-            <slot :row="row"></slot>
-          </tr>
-        </template> -->
-      </tbody>
-      <table-row-creator
+        <lunar-recursive
         :columns="columns"
         :editable="editable"
         :grouping="grouping"
         :rows="rows" />
+      </tbody>
     </table>
   </div>
 </template>
@@ -54,7 +38,7 @@ import axios from 'axios'
 import LTableCollection from './components/TableCollection'
 import LTableRow from './components/TableRow'
 import LTableCell from './components/TableDataCell'
-import TableRowCreator from './components/TableRowCreator'
+import LunarRecursive from './components/TableRowCreator'
 
 export default {
   name: 'LunarTable',
@@ -63,7 +47,7 @@ export default {
     LTableRow,
     LTableCollection,
     LTableCell,
-    TableRowCreator
+    LunarRecursive
   },
 
   props: {
@@ -123,9 +107,6 @@ export default {
   },
 
   computed: {
-    hasBodySlot () {
-      return _.isEmpty(this.$scopedSlots)
-    },
     groupingRows () {
       return this.grouping.map(columnVal => this.columns.find(column => column.value === columnVal))
     },
@@ -159,7 +140,6 @@ export default {
       this.grouping.push(this.columns[2].value)
 
       if (this.datasource.url) {
-        console.log('url')
         return axios.get(`${this.datasource.url}?_start=0&_limit=${this.pagination.limit}`)
           .then((response) => {
             this.response.data = response.data
