@@ -1,4 +1,4 @@
-import { groupBy } from 'lodash'
+import * as _ from 'lodash'
 import LTableCell from './TableDataCell'
 
 // const needsTR = (row) => row.length && (row.find(r => r.tag === 'td'))
@@ -26,7 +26,7 @@ const renderEmptyCell = (h, context) => {
 }
 
 // const renderHeaderRow = (h, context, key) => {
-//   return <tr><td>{ context.props.grouping[context.props.index] } : { key }</td></tr>
+//   return h('td', {}, [`${context.props.grouping[context.props.index]} : ${key}`])
 // }
 
 const renderResultSet = (h, context) => {
@@ -42,7 +42,7 @@ const currentGrouping = (context) => {
 
 const getGroups = (context) => {
   const value = currentGrouping(context).value
-  return groupBy(context.props.rows, row => row[value])
+  return _.groupBy(context.props.rows, row => row[value])
 }
 
 export default {
@@ -77,16 +77,24 @@ export default {
   render (h, context) {
     if (context.props.index < context.props.grouping.length) {
       const groups = getGroups(context)
-
       return Object.keys(groups).map((key, i) => {
         const data = groups[key]
 
-        return (<lunar-recursive
-              editable={context.props.editable}
-              rows={data}
-              index={context.props.index + 1}
-              grouping={context.props.grouping}
-              columns={context.props.columns} />)
+        return (
+          <tbody>
+          <lunar-recursive
+            editable={context.props.editable}
+            rows={data}
+            index={context.props.index + 1}
+            grouping={context.props.grouping}
+            columns={context.props.columns} />
+          </tbody>
+          // <tr>
+          //   {h('td', {}, [`${context.props.grouping[context.props.index]} : ${key}`])}
+          // </tr>
+        )
+          // h('div', []
+          //  )
       })
     } else {
       return renderResultSet(h, context)

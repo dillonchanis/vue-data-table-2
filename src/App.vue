@@ -25,7 +25,8 @@ export default {
       columns: [
         { id: 1, label: 'ID', value: 'id', title: 'Identification' },
         { id: 2, label: 'Name', value: 'name', title: 'Name' },
-        { id: 3, label: 'Email', value: 'email', title: 'Email' }
+        { id: 3, label: 'Email', value: 'email', title: 'Email' },
+        { id: 4, label: 'Body', value: 'body', title: 'Body' }
       ],
       datasource: {
         url: '',

@@ -102,7 +102,8 @@ export default {
       sort: {
         by: this.sortBy,
         order: 'asc'
-      }
+      },
+      groupTextSeparator: ':'
     }
   },
 
@@ -130,6 +131,56 @@ export default {
       }
 
       return data
+    },
+    test () {
+      let data = this.response.data.length ? this.response.data : this.datasource.records
+      let index = 0
+
+      for (index; index < this.grouping.length; index++) {
+        let currentGrouping = this.grouping[index]
+        let groupedData = _.groupBy(data, item => {
+          if (_.isObject(item)) {
+            return item[currentGrouping]
+          } else {
+            return item
+          }
+        })
+
+        let header = {}
+
+        data = _.flattenDeep(Object.keys(groupedData).map((key, i) => {
+          if (!key.includes(this.groupTextSeparator)) {
+            header = `${currentGrouping} ${this.groupTextSeparator} ${key}`
+            return [header, groupedData[key][0]]
+          }
+
+          return [groupedData[key][0]]
+        }))
+      }
+
+      // let currentGrouping = this.grouping[0]
+      // let groupedData = _.groupBy(data, item => item[currentGrouping])
+      // data = _.flattenDeep(Object.keys(groupedData).map((key, i) => [`${currentGrouping} : ${key}`, groupedData[key][0]]))
+
+      // data = _.groupBy(data, item => item[this.grouping[1]])
+
+      // data = data.filter(row => {
+      //   return Object.keys(row).some(key => {
+      //     return String(row[key]).toLowerCase().indexOf(this.filter.toLowerCase()) > -1
+      //   })
+      // })
+
+      // if (this.sort.by) {
+      //   data = _.orderBy(data, item => {
+      //     let value = item[this.sort.by]
+      //     if (!isNaN(Number(value))) {
+      //       return Number(value)
+      //     }
+      //     return String(value).toLowerCase()
+      //   }, this.sort.order)
+      // }
+
+      return data
     }
   },
 
@@ -138,6 +189,8 @@ export default {
       // Placeholder for grouping
       this.grouping.push(this.columns[1].value)
       this.grouping.push(this.columns[2].value)
+      // this.grouping.push(this.columns[3].value)
+      // this.grouping.push(this.columns[0].value)
 
       if (this.datasource.url) {
         return axios.get(`${this.datasource.url}?_start=0&_limit=${this.pagination.limit}`)
