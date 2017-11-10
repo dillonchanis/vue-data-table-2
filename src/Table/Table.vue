@@ -8,9 +8,6 @@
     <table role="grid" class="lunar-table" :aria-colcount="columns.length" :aria-rowcount="rows.length">
       <thead class="lunar-table__head">
         <tr role="row">
-          <!-- <template v-for="(group, index) in groupingRows">
-            <th role="presentation" :key="group.id">&nbsp;</th>
-          </template> -->
           <th v-for="column in columns"
               :key="column.value"
               class="lunar-table__head-item"
@@ -21,11 +18,14 @@
         </tr>
       </thead>
       <tbody class="lunar-table__body">
-        <lunar-recursive
-        :columns="columns"
-        :editable="editable"
-        :grouping="grouping"
-        :rows="rows" />
+        <tr v-for="row in rows" :key="row.id">
+          <l-table-header-cell v-if="isHeaderCell(row)" :row="row" />
+          <l-table-cell v-else v-for="column in columns"
+            :key="column.id"
+            :column="column"
+            :row="row"
+            :editable="editable" />
+        </tr>
       </tbody>
     </table>
   </div>
@@ -35,19 +35,15 @@
 import _ from 'lodash'
 import axios from 'axios'
 
-import LTableCollection from './components/TableCollection'
-import LTableRow from './components/TableRow'
+import LTableHeaderCell from './components/TableHeaderCell'
 import LTableCell from './components/TableDataCell'
-import LunarRecursive from './components/TableRowCreator'
 
 export default {
   name: 'LunarTable',
 
   components: {
-    LTableRow,
-    LTableCollection,
-    LTableCell,
-    LunarRecursive
+    LTableHeaderCell,
+    LTableCell
   },
 
   props: {
@@ -65,6 +61,10 @@ export default {
     groupingIndex: {
       type: Number,
       default: 0
+    },
+    groupTextSeparator: {
+      type: String,
+      default: '-'
     },
     limit: {
       type: Number,
@@ -102,8 +102,7 @@ export default {
       sort: {
         by: this.sortBy,
         order: 'asc'
-      },
-      groupTextSeparator: ':'
+      }
     }
   },
 
@@ -113,6 +112,38 @@ export default {
     },
     rows () {
       let data = this.response.data.length ? this.response.data : this.datasource.records
+      let index = 0
+      let header
+
+      for (index; index < this.grouping.length; index++) {
+        const currentGrouping = this.grouping[index]
+        const groupedData = _.groupBy(data, item => {
+          if (_.isObject(item)) {
+            return item[currentGrouping]
+          } else {
+            return item
+          }
+        })
+
+        data = _.flattenDeep(Object.keys(groupedData).map((key, i) => {
+          if (!key.includes(this.groupTextSeparator)) {
+            header = `${currentGrouping} ${this.groupTextSeparator} ${key}`
+            return [header, groupedData[key][0]]
+          }
+
+          return [groupedData[key][0]]
+        }))
+      }
+
+      data = data.map(row => {
+        if (!_.isObject(row)) {
+          return {
+            headerText: row,
+            colSpan: '100%'
+          }
+        }
+        return row
+      })
 
       data = data.filter(row => {
         return Object.keys(row).some(key => {
@@ -129,68 +160,19 @@ export default {
           return String(value).toLowerCase()
         }, this.sort.order)
       }
-
-      return data
-    },
-    test () {
-      let data = this.response.data.length ? this.response.data : this.datasource.records
-      let index = 0
-
-      for (index; index < this.grouping.length; index++) {
-        let currentGrouping = this.grouping[index]
-        let groupedData = _.groupBy(data, item => {
-          if (_.isObject(item)) {
-            return item[currentGrouping]
-          } else {
-            return item
-          }
-        })
-
-        let header = {}
-
-        data = _.flattenDeep(Object.keys(groupedData).map((key, i) => {
-          if (!key.includes(this.groupTextSeparator)) {
-            header = `${currentGrouping} ${this.groupTextSeparator} ${key}`
-            return [header, groupedData[key][0]]
-          }
-
-          return [groupedData[key][0]]
-        }))
-      }
-
-      // let currentGrouping = this.grouping[0]
-      // let groupedData = _.groupBy(data, item => item[currentGrouping])
-      // data = _.flattenDeep(Object.keys(groupedData).map((key, i) => [`${currentGrouping} : ${key}`, groupedData[key][0]]))
-
-      // data = _.groupBy(data, item => item[this.grouping[1]])
-
-      // data = data.filter(row => {
-      //   return Object.keys(row).some(key => {
-      //     return String(row[key]).toLowerCase().indexOf(this.filter.toLowerCase()) > -1
-      //   })
-      // })
-
-      // if (this.sort.by) {
-      //   data = _.orderBy(data, item => {
-      //     let value = item[this.sort.by]
-      //     if (!isNaN(Number(value))) {
-      //       return Number(value)
-      //     }
-      //     return String(value).toLowerCase()
-      //   }, this.sort.order)
-      // }
-
       return data
     }
   },
 
   methods: {
+    isHeaderCell (row) {
+      return row.hasOwnProperty('headerText')
+    },
     getRecords () {
       // Placeholder for grouping
       this.grouping.push(this.columns[1].value)
       this.grouping.push(this.columns[2].value)
-      // this.grouping.push(this.columns[3].value)
-      // this.grouping.push(this.columns[0].value)
+      this.grouping.push(this.columns[3].value)
 
       if (this.datasource.url) {
         return axios.get(`${this.datasource.url}?_start=0&_limit=${this.pagination.limit}`)
