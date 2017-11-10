@@ -1,6 +1,6 @@
 <template>
   <td v-if="editable" class="lunar-table__editable-cell" :colspan="colSpan">
-    <input type="text" class="lunar-table__input" v-model="row[column.id]">
+    <input type="text" class="lunar-table__input" v-model="row[column.value]">
   </td>
   <td v-else :colspan="colSpan">
     {{ row[column.value] }}
@@ -28,7 +28,3 @@ export default {
   }
 }
 </script>
-
-<style lang="scss" scoped>
-
-</style>
