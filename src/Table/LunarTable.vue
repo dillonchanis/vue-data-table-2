@@ -28,14 +28,17 @@
         </tr>
       </thead>
       <tbody class="lunar-table__body">
-        <tr v-for="row in rows" :key="row.id">
-          <l-table-header-cell v-if="isHeaderCell(row)" :row="row" />
-          <l-table-cell v-else v-for="column in columns"
-            :key="column.id"
-            :column="column"
-            :row="row"
-            :editable="editable" />
-        </tr>
+        <template v-if="rows.length" v-for="row in rows">
+          <l-table-header-cell v-if="row.grouped.length" :row="row" :key="row.id" />
+          <tr>
+            <l-table-cell v-for="column in columns"
+              :key="column.id"
+              :column="column"
+              :grouping="grouping.current"
+              :row="row"
+              :editable="editable" />
+          </tr>
+        </template>
       </tbody>
     </table>
     <div class="lunar-table__page-size-container">
@@ -148,41 +151,38 @@ export default {
     rows () {
       let data = this.response.data
 
+      data = data.map(rows => {
+        return Object.assign(rows, {
+          grouped: []
+        })
+      })
+
       if (this.grouping.current.length) {
         let index = 0
-        let header
+        // let header
 
         for (index; index < this.grouping.current.length; index++) {
           const currentGrouping = this.grouping.current[index]
           const groupedData = _.groupBy(data, item => {
             if (_.isObject(item)) {
               return item[currentGrouping]
-            } else {
-              return item
             }
+
+            return item
           })
 
           data = _.flattenDeep(Object.keys(groupedData).map((key, i) => {
+            const row = groupedData[key][0]
             if (!key.includes(this.groupTextSeparator)) {
-              header = `${currentGrouping} ${this.groupTextSeparator} ${key}`
-              return [header, groupedData[key][0]]
+              const title = `${currentGrouping} ${this.groupTextSeparator} ${key}`
+              row.grouped.push(title)
+              return [row]
             }
 
-            return [groupedData[key][0]]
+            return [row]
           }))
         }
       }
-
-      data = data.map(row => {
-        if (!_.isObject(row)) {
-          return {
-            headerText: row,
-            colSpan: '100%',
-            class: 'grouped-row-header'
-          }
-        }
-        return row
-      })
 
       data = data.filter(row => {
         return Object.keys(row).some(key => {
@@ -210,15 +210,7 @@ export default {
     dragStart (column) {
       this.grouping.dragColumn = column
     },
-    isHeaderCell (row) {
-      return row.hasOwnProperty('headerText')
-    },
     getRecords () {
-      // Placeholder for grouping
-      // this.grouping.current.push(this.columns[1].value)
-      // this.grouping.current.push(this.columns[2].value)
-      // this.grouping.current.push(this.columns[3].value)
-
       if (this.datasource.url) {
         return axios.get(`${this.datasource.url}?_start=0&_limit=${this.pagination.limit}`)
           .then((response) => {
@@ -235,7 +227,8 @@ export default {
       console.warn('You must provide a datasource URL or an array of records.')
     },
     removeGroup (value) {
-      this.grouping.current = _.remove(this.grouping.current, g => g.value === value)
+      const index = this.grouping.current.indexOf(value)
+      this.grouping.current.splice(index, 1)
     },
     sortTable (column) {
       this.sort.by = column.value

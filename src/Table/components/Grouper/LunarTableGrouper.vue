@@ -32,6 +32,7 @@ export default {
   methods: {
     drop () {
       this.$emit('dropGroup')
+      this.isActive = false
     },
     remove (group) {
       this.$emit('removeGroup', group)

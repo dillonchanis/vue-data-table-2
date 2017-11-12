@@ -8,10 +8,14 @@ export default {
     }
   },
   render (h, context) {
-    return (
-      <td class={context.props.row.class} colspan={context.props.row.colSpan}>
-        {context.props.row.headerText }
-      </td>
-    )
+    return context.props.row.grouped.map(header => {
+      return (
+        <tr>
+          <td class="grouped-row-header" colspan="100%">
+            { header }
+          </td>
+        </tr>
+      )
+    })
   }
 }
