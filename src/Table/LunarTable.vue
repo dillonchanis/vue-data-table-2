@@ -1,64 +1,91 @@
 <template>
   <div class="lunar-table__container">
-    <div class="lunar-table__options">
-      <a href="#" @click.prevent="settings.open = !settings.open">
-        <icon @click="settings.open = !settings.open" name="cog"></icon>
-      </a>
-      <div v-if="settings.open">
-        <ul class="list list--inline">
-          <li class="list-item" v-for="column in columns" :key="column.key">
-            <label>
-              <input type="checkbox" v-model="column.active" />
-              {{ column.label }}
-            </label>
-          </li>
-        </ul>
-      </div>
-    </div>
+    <a href="#l-table-content" class="sr-only sr-only-focusable">Skip to Table's Content</a>
 
-    <div class="lunar-table__filter-container" v-if="withFilter">
-      <l-table-filter :query="filter" @input="updateFilter" />
+    <header class="lunar-table__header">
+      <l-table-filter v-if="withFilter" :query="filter" @input="updateFilter" />
+
+      <div class="lunar-table__options">
+        <a class="options-link" href="#" @click.prevent="settings.open = !settings.open">
+          <fa-icon @click="settings.open = !settings.open" name="cog"></fa-icon>
+        </a>
+      </div>
+    </header>
+
+    <div class="column__select" v-if="settings.open">
+      <ul class="list list--inline">
+        <li class="list-item" v-for="column in columns" :key="column.key">
+          <label>
+            <input type="checkbox" v-model="column.active" />
+            {{ column.label }}
+          </label>
+        </li>
+      </ul>
     </div>
 
     <l-table-group v-if="withGrouping"
       :groupingRows="groupingRows"
       :dropzoneActive="grouping.dropzoneActive"
-      @removeGroup="removeGroup"
-      @dropGroup="addGrouping" />
+      @dropGroup="addGrouping"
+      @removeGroup="removeGroup" />
 
-    <table role="grid" class="lunar-table" :aria-colcount="columns.length" :aria-rowcount="rows.length">
-      <thead class="lunar-table__head">
-        <tr role="row">
-          <th v-for="column in columns"
-              v-if="column.active"
-              :key="column.value"
-              class="lunar-table__head-item"
-              role="columnheader"
-              :draggable="withGrouping"
-              @dragover="grouping.dropzoneActive = true"
-              @dragleave="grouping.dropzoneActive = false"
-              @dragstart="dragStart(column)"
-              @click="sortTable(column)">
-              <icon v-if="sort.by === column.value"
-                    :name="sort.order === 'asc' ? 'sort-asc' : 'sort-desc'"></icon>
-              {{ column.label }}
-          </th>
-        </tr>
-      </thead>
-      <tbody v-if="rows.length" class="lunar-table__body">
-        <template v-for="row in rows">
-          <l-table-header-cell v-if="row.grouped.length" :row="row" :key="row.id" />
-          <tr :key="row.id">
-            <l-table-cell v-for="column in columns"
-              :key="column.id"
-              :column="column"
-              :grouping="grouping.current"
-              :row="row"
-              :editable="editable" />
+    <figure class="lunar-table__wrapper">
+      <div v-show="grouping.dropzoneActive" class="lunar-table__overlay">
+        <div class="lunar-table__overlay-item">
+          <fa-icon name="plus-square" scale="4"></fa-icon>
+        </div>
+        <div class="lunar-table__overlay-item">
+          Add Group
+        </div>
+      </div>
+
+      <table id="l-table-content"
+             role="grid"
+             tabindex="0"
+             class="lunar-table" :class="{ 'overlay-active': grouping.dropzoneActive }"
+             :aria-colcount="columns.length" :aria-rowcount="rows.length">
+
+        <thead class="lunar-table__head">
+          <tr class="lunar-table__row" role="row">
+            <th v-for="column in columns"
+                v-if="column.active"
+                :key="column.value"
+                class="lunar-table__head-item"
+                :class="{ 'head-item--active': sort.by === column.value }"
+                role="columnheader"
+                :draggable="withGrouping"
+                @dragover="grouping.dropzoneActive = true"
+                @dragleave="grouping.dropzoneActive = false"
+                @dragstart="dragStart(column)"
+                @click="sortTable(column)">
+                <fa-icon v-if="sort.by === column.value"
+                         scale="0.9"
+                         :name="sort.order === 'asc' ? 'sort-asc' : 'sort-desc'"></fa-icon>
+                {{ column.label }}
+            </th>
           </tr>
-        </template>
-      </tbody>
-    </table>
+        </thead>
+
+        <tbody v-if="rows.length" class="lunar-table__body"
+             @dragover.prevent
+             @dragover="grouping.dropzoneActive = true"
+             @dragleave="grouping.dropzoneActive = false"
+             @drop="addGrouping">
+          <template v-for="row in rows">
+            <l-table-header-cell v-if="row._grouped.length" :row="row" :key="row.id" />
+            <tr class="lunar-table__row" role="row" :key="row.id">
+              <l-table-cell v-for="column in columns"
+                :key="column.id"
+                :column="column"
+                :grouping="grouping.current"
+                :row="row"
+                :editable="editable" />
+            </tr>
+          </template>
+        </tbody>
+
+      </table>
+    </figure>
     <div class="lunar-table__page-size-container">
       <l-table-page-size :pageSizes="pagination.pageSizes" @change="updatePageSize" />
       <l-table-pagination :pagination="pagination" @pageSwitch="updatePagination" />
@@ -67,12 +94,13 @@
 </template>
 
 <script>
-import _ from 'lodash'
-import axios from 'axios'
-
 // Core
 import LTableHeaderCell from './components/LunarTableHeaderCell.js'
 import LTableCell from './components/LunarTableDataCell'
+
+// Libraries
+import _ from 'lodash'
+import axios from 'axios'
 
 // Addons
 import LTableFilter from './components/Filter/LunarTableFilter'
@@ -80,9 +108,11 @@ import LTablePageSize from './components/Pagination/LunarTablePageSize'
 import LTablePagination from './components/Pagination/LunarTablePagination'
 import LTableGroup from './components/Grouper/LunarTableGrouper'
 
+// Iconography
 import 'vue-awesome/icons/sort-asc'
 import 'vue-awesome/icons/sort-desc'
 import 'vue-awesome/icons/cog'
+import 'vue-awesome/icons/plus-square'
 
 export default {
   name: 'lunar-table',
@@ -128,6 +158,14 @@ export default {
       type: String,
       default: 'No results found.'
     },
+    singleSelect: {
+      type: Boolean,
+      default: false
+    },
+    multiSelect: {
+      type: Boolean,
+      default: false
+    },
     sortBy: {
       type: String,
       default: 'id'
@@ -158,7 +196,7 @@ export default {
         limit: this.limit,
         pageSizes: [25, 50, 100, 'All'],
         current: 1,
-        total: 100
+        total: 10
       },
       response: {
         data: [],
@@ -166,6 +204,10 @@ export default {
       },
       settings: {
         open: false
+      },
+      selected: {
+        records: [],
+        all: false
       },
       sort: {
         by: this.sortBy,
@@ -183,7 +225,7 @@ export default {
 
       data = data.map(rows => {
         return Object.assign(rows, {
-          grouped: []
+          _grouped: []
         })
       })
 
@@ -211,10 +253,10 @@ export default {
             return rows.map((row, idx) => {
               if (!key.includes(this.groupTextSeparator)) {
                 const title = `${currentGrouping} ${this.groupTextSeparator} ${key}`
-                row.grouped.push(title)
+                row._grouped.push(title)
 
-                if (idx >= 1 && _.isEqual(rows[idx - 1].grouped.sort(), row.grouped.sort())) {
-                  row.grouped = []
+                if (idx >= 1 && !_.isEmpty(rows[0])) {
+                  row._grouped = []
                 }
 
                 return [row]
@@ -235,6 +277,8 @@ export default {
       if (!this.grouping.current.includes(this.grouping.dragColumn.value)) {
         this.grouping.current.push(this.grouping.dragColumn.value)
       }
+
+      this.grouping.dropzoneActive = false
     },
     dragStart (column) {
       this.grouping.dragColumn = column
@@ -286,13 +330,115 @@ export default {
 }
 </script>
 
+<style lang="scss">
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0,0,0,0);
+  border: 0;
+}
+
+.sr-only-focusable:focus {
+  position: static;
+  width: auto;
+  height: auto;
+  margin: 0;
+  overflow: visible;
+  clip: auto;
+}
+
+.l-btn {
+  background: transparent;
+  border: 2px solid #ccc;
+  border-radius: 4px;
+  color: #333;
+  cursor: pointer;
+  box-shadow: none;
+  outline: none;
+  padding: 6px 12px;
+}
+
+@media print {
+  body {
+    font-size: 6pt;
+    color: #000;
+    background-color: #fff;
+    background-image: none;
+    margin: 0;
+    padding: 0;
+  }
+  table {
+    page-break-inside: avoid;
+  }
+}
+@media print and (max-width: 5in) {
+  table {
+    page-break-inside: auto;
+  }
+  tr {
+    page-break-inside: avoid;
+  }
+}
+</style>
+
 <style lang="scss" scoped>
 .lunar-table {
+  width: 100%;
+  border-collapse: collapse;
+  border-bottom: 2px solid #EFF0F0;
+
+  &__container {
+    background-color: #FCFCFC;
+    border-radius: 4px;
+    box-shadow: 0 10px 40px 0 rgba(62,57,107,0.07), 0 2px 9px 0 rgba(62,57,107,0.06);
+  }
+
+  &__wrapper {
+    position: relative;
+    width: 100%;
+    max-width: 100%;
+    overflow-x: auto;
+    margin: 0;
+    padding: 0;
+  }
+
+  &.overlay-active {
+    filter: blur(3px);
+  }
+
+  &__overlay {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    flex-direction: column;
+    background: rgba(0,0,0,0.25);
+    color: #333;
+    border-radius: 4px;
+    pointer-events: none;
+  }
 
   &__head {
+    background-color: #F9FAFC;
+    border-top: 2px solid #EFF0F0;
+    border-bottom: 2px solid #EFF0F0;
 
     &-item {
+      color: lighten(#333, 35%);
       text-align: left;
+      font-size: 0.95em;
+      text-transform: uppercase;
+      padding: 0.9em 0.5em 0.9em 1em;
+
+      &.head-item--active {
+        color: #333;
+      }
     }
 
   }
@@ -304,18 +450,34 @@ export default {
     margin-right: 15px;
   }
 
-  &__drop-zone {
-    height: 90px;
-    width: 100%;
-    background: cornflowerblue;
+  &__header,
+  &__page-size-container {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
   }
 
-  &__page-size-container {
-    margin: 15px auto;
+  &__header {
+    height: 50px;
+  }
+
+  &__options {
+    margin-right: 15px;
+
+    .options-link {
+      color: #2c3e50;
+    }
   }
 
   .grouped-row-header {
-    background: #ddd;
+    background: #F4F4F6;
+  }
+
+  &__cell,
+  .grouped-row-header {
+    padding: 0.25em 0.5em 0.25em 1em;
+    line-height: 1.6
   }
 
 }
@@ -329,6 +491,31 @@ export default {
     .list-item {
       display: inline-block;
       margin-right: 15px;
+    }
+  }
+}
+
+.column__select {
+  padding: 0.25em 0.5em 0.25em 1em;
+}
+
+@media all and (max-width: 37em) {
+  .lunar-table {
+    display: block;
+
+    &__row,
+    &__cell {
+      display: block;
+    }
+
+    &__row {
+      padding: 0.7em 2vw;
+    }
+
+    &__head {
+      .lunar-table__row {
+        display: none;
+      }
     }
   }
 }

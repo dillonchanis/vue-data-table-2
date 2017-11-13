@@ -8,10 +8,10 @@ export default {
     }
   },
   render (h, context) {
-    return context.props.row.grouped.map(header => {
+    return context.props.row._grouped.map(header => {
       return (
         <tr>
-          <td class="grouped-row-header" colspan="100%">
+          <td class="grouped-row-header lunar-table__cell" colspan="100%">
             { header }
           </td>
         </tr>

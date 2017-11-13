@@ -1,8 +1,8 @@
 <template>
-  <td v-if="edit" class="lunar-table__editable-cell" :colspan="colSpan" @keyup.enter="edit = false">
+  <td v-if="edit" class="lunar-table__editable-cell lunar-table__cell" :colspan="colSpan" @keyup.enter="edit = false">
     <input type="text" class="lunar-table__input" v-model="row[column.value]">
   </td>
-  <td v-else-if="column.active" :colspan="colSpan" @dblclick="edit = !edit">
+  <td class="lunar-table__cell" v-else-if="column.active" :colspan="colSpan" @dblclick="edit = !edit">
     {{ value(row, column.value) }}
   </td>
 </template>

@@ -1,15 +1,8 @@
 <template>
-  <div class="lunar-table__drop-zone"
-       :class="{ 'drop-zone-active': isActive }"
-       @dragover.prevent
-       @dragover="isActive = true"
-       @dragleave="isActive = false"
-       @drop="drop">
-
+  <div class="lunar-table__grouping">
     <div class="lunar-table__group-indicator" v-for="group in groupingRows" :key="group.id">
-      <button @click="remove(group.value)">&times; {{ group.label }}</button>
+      <button class="l-btn" @click="remove(group.value)">&times; {{ group.label }}</button>
     </div>
-
   </div>
 </template>
 
@@ -30,10 +23,6 @@ export default {
     }
   },
   methods: {
-    drop () {
-      this.$emit('dropGroup')
-      this.isActive = false
-    },
     remove (group) {
       this.$emit('removeGroup', group)
     }
@@ -43,14 +32,25 @@ export default {
 
 <style lang="scss" scoped>
 .lunar-table {
+  &__grouping {
+    background-color: #e8e8e8;
+    box-shadow: inset 0 0 8px 0px rgba(112, 97, 97, 0.15)
+  }
 
-  &__drop-zone {
-    margin: 15px auto;
-    border: 1px solid #333;
+  &__group-indicator {
+    display: inline-block;
+    margin-right: 10px;
+    padding: 10px 0;
+    padding-left: 1em;
+
+    .l-btn {
+      height: 32px;
+      background: #FCFCFC;
+      border-radius: 0;
+      border: none;
+      border-left: 3px solid #007bff;
+      box-shadow: 0 2px 6px 0 rgba(62,57,107,0.2);
+    }
   }
 }
-  .drop-zone-active {
-    border: 1px dotted #333;
-    background-color: wheat;
-  }
 </style>

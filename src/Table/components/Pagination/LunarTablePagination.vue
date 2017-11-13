@@ -94,7 +94,7 @@ export default {
 <style lang="scss" scoped>
 .pagination__container {
   display: inline-flex;
-  margin-right: 24px;
+  margin-right: 15px;
 }
 .pagination {
   display: flex;
@@ -107,8 +107,8 @@ export default {
     &.active .pagination__link {
       z-index: 2;
       color: #fff;
-      background-color: #007bff;
-      border-color: #007bff;
+      background-color: #2c3e50;
+      border-color: #2c3e50;
     }
     &.disabled {
       cursor: not-allowed;
@@ -136,7 +136,7 @@ export default {
     padding: 2px 8px;
     margin-left: -1px;
     line-height: 1.25;
-    color: #007bff;
+    color: #2c3e50;
     background-color: #fff;
     border: 1px solid #ddd;
     text-decoration: none;

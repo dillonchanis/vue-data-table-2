@@ -37,11 +37,15 @@ export default {
   font-size: 0.75em;
 }
 .lunar-table__page-size {
-  padding: 24px;
+  padding: 0 18px;
   display: inline-flex;
   .lunar-table__select {
     display: inline-block;
     width: initial;
+    background: transparent;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    padding: 4px 12px;
   }
 }
 </style>
