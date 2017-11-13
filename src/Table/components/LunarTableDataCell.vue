@@ -1,8 +1,8 @@
 <template>
-  <td v-if="editable" class="lunar-table__editable-cell" :colspan="colSpan">
+  <td v-if="edit" class="lunar-table__editable-cell" :colspan="colSpan" @keyup.enter="edit = false">
     <input type="text" class="lunar-table__input" v-model="row[column.value]">
   </td>
-  <td v-else-if="column.active" :colspan="colSpan">
+  <td v-else-if="column.active" :colspan="colSpan" @dblclick="edit = !edit">
     {{ value(row, column.value) }}
   </td>
 </template>
@@ -32,10 +32,20 @@ export default {
     }
   },
 
+  data () {
+    return {
+      edit: false
+    }
+  },
+
   methods: {
     value (row, column) {
       return _.get(row, column)
     }
+  },
+
+  created () {
+    this.edit = this.editable
   }
 }
 </script>

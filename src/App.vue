@@ -9,7 +9,6 @@
     </l-table> -->
     <l-table :columns="columns"
              :datasource="datasource"
-             :limit="5"
              with-filter
              with-grouping>
     </l-table>

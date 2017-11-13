@@ -1,5 +1,21 @@
 <template>
   <div class="lunar-table__container">
+    <div class="lunar-table__options">
+      <a href="#" @click.prevent="settings.open = !settings.open">
+        <icon @click="settings.open = !settings.open" name="cog"></icon>
+      </a>
+      <div v-if="settings.open">
+        <ul class="list list--inline">
+          <li class="list-item" v-for="column in columns" :key="column.key">
+            <label>
+              <input type="checkbox" v-model="column.active" />
+              {{ column.label }}
+            </label>
+          </li>
+        </ul>
+      </div>
+    </div>
+
     <div class="lunar-table__filter-container" v-if="withFilter">
       <l-table-filter :query="filter" @input="updateFilter" />
     </div>
@@ -8,7 +24,7 @@
       :groupingRows="groupingRows"
       :dropzoneActive="grouping.dropzoneActive"
       @removeGroup="removeGroup"
-      @dropGroup="drop" />
+      @dropGroup="addGrouping" />
 
     <table role="grid" class="lunar-table" :aria-colcount="columns.length" :aria-rowcount="rows.length">
       <thead class="lunar-table__head">
@@ -23,14 +39,16 @@
               @dragleave="grouping.dropzoneActive = false"
               @dragstart="dragStart(column)"
               @click="sortTable(column)">
+              <icon v-if="sort.by === column.value"
+                    :name="sort.order === 'asc' ? 'sort-asc' : 'sort-desc'"></icon>
               {{ column.label }}
           </th>
         </tr>
       </thead>
-      <tbody class="lunar-table__body">
-        <template v-if="rows.length" v-for="row in rows">
+      <tbody v-if="rows.length" class="lunar-table__body">
+        <template v-for="row in rows">
           <l-table-header-cell v-if="row.grouped.length" :row="row" :key="row.id" />
-          <tr>
+          <tr :key="row.id">
             <l-table-cell v-for="column in columns"
               :key="column.id"
               :column="column"
@@ -43,6 +61,7 @@
     </table>
     <div class="lunar-table__page-size-container">
       <l-table-page-size :pageSizes="pagination.pageSizes" @change="updatePageSize" />
+      <l-table-pagination :pagination="pagination" @pageSwitch="updatePagination" />
     </div>
   </div>
 </template>
@@ -58,7 +77,12 @@ import LTableCell from './components/LunarTableDataCell'
 // Addons
 import LTableFilter from './components/Filter/LunarTableFilter'
 import LTablePageSize from './components/Pagination/LunarTablePageSize'
+import LTablePagination from './components/Pagination/LunarTablePagination'
 import LTableGroup from './components/Grouper/LunarTableGrouper'
+
+import 'vue-awesome/icons/sort-asc'
+import 'vue-awesome/icons/sort-desc'
+import 'vue-awesome/icons/cog'
 
 export default {
   name: 'lunar-table',
@@ -68,6 +92,7 @@ export default {
     LTableCell,
     LTableFilter,
     LTablePageSize,
+    LTablePagination,
     LTableGroup
   },
 
@@ -131,11 +156,16 @@ export default {
       },
       pagination: {
         limit: this.limit,
-        pageSizes: [10, 25, 50, 'All']
+        pageSizes: [25, 50, 100, 'All'],
+        current: 1,
+        total: 100
       },
       response: {
         data: [],
         errors: []
+      },
+      settings: {
+        open: false
       },
       sort: {
         by: this.sortBy,
@@ -157,33 +187,6 @@ export default {
         })
       })
 
-      if (this.grouping.current.length) {
-        let index = 0
-        // let header
-
-        for (index; index < this.grouping.current.length; index++) {
-          const currentGrouping = this.grouping.current[index]
-          const groupedData = _.groupBy(data, item => {
-            if (_.isObject(item)) {
-              return item[currentGrouping]
-            }
-
-            return item
-          })
-
-          data = _.flattenDeep(Object.keys(groupedData).map((key, i) => {
-            const row = groupedData[key][0]
-            if (!key.includes(this.groupTextSeparator)) {
-              const title = `${currentGrouping} ${this.groupTextSeparator} ${key}`
-              row.grouped.push(title)
-              return [row]
-            }
-
-            return [row]
-          }))
-        }
-      }
-
       data = data.filter(row => {
         return Object.keys(row).some(key => {
           return String(row[key]).toLowerCase().indexOf(this.filter.toLowerCase()) > -1
@@ -199,20 +202,46 @@ export default {
           return String(value).toLowerCase()
         }, this.sort.order)
       }
-      return data
+
+      if (this.grouping.current.length) {
+        this.grouping.current.map(currentGrouping => {
+          const groupedData = _.groupBy(data, item => item[currentGrouping])
+          data = _.flattenDeep(Object.keys(groupedData).map(key => {
+            const rows = groupedData[key]
+            return rows.map((row, idx) => {
+              if (!key.includes(this.groupTextSeparator)) {
+                const title = `${currentGrouping} ${this.groupTextSeparator} ${key}`
+                row.grouped.push(title)
+
+                if (idx >= 1 && _.isEqual(rows[idx - 1].grouped.sort(), row.grouped.sort())) {
+                  row.grouped = []
+                }
+
+                return [row]
+              }
+
+              return [row]
+            })
+          }))
+        })
+      }
+
+      return this.paginate(data)
     }
   },
 
   methods: {
-    drop (e) {
-      this.grouping.current.push(this.grouping.dragColumn.value)
+    addGrouping (e) {
+      if (!this.grouping.current.includes(this.grouping.dragColumn.value)) {
+        this.grouping.current.push(this.grouping.dragColumn.value)
+      }
     },
     dragStart (column) {
       this.grouping.dragColumn = column
     },
     getRecords () {
       if (this.datasource.url) {
-        return axios.get(`${this.datasource.url}?_start=0&_limit=${this.pagination.limit}`)
+        return axios.get(`${this.datasource.url}?_start=0&_limit=${this.pagination.total}`)
           .then((response) => {
             this.response.data = response.data
           })
@@ -225,6 +254,10 @@ export default {
       }
 
       console.warn('You must provide a datasource URL or an array of records.')
+    },
+    paginate (records) {
+      const offset = (this.pagination.current - 1) * this.pagination.limit
+      return records.slice(offset, offset + this.pagination.limit)
     },
     removeGroup (value) {
       const index = this.grouping.current.indexOf(value)
@@ -239,6 +272,10 @@ export default {
     },
     updatePageSize (limit) {
       this.pagination.limit = limit
+      this.getRecords()
+    },
+    updatePagination (page) {
+      this.pagination.current = page
       this.getRecords()
     }
   },
@@ -281,5 +318,18 @@ export default {
     background: #ddd;
   }
 
+}
+
+.list {
+  &--inline {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+
+    .list-item {
+      display: inline-block;
+      margin-right: 15px;
+    }
+  }
 }
 </style>

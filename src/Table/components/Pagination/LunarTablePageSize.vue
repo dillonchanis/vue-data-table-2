@@ -33,5 +33,15 @@ export default {
 </script>
 
 <style lang="scss" scoped>
-
+.lunar-table__label {
+  font-size: 0.75em;
+}
+.lunar-table__page-size {
+  padding: 24px;
+  display: inline-flex;
+  .lunar-table__select {
+    display: inline-block;
+    width: initial;
+  }
+}
 </style>
