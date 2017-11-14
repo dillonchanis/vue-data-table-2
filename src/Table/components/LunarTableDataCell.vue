@@ -49,3 +49,22 @@ export default {
   }
 }
 </script>
+
+<style lang="scss" scoped>
+.lunar-table__cell {
+  height: 100%;
+
+  &.lunar-table__editable-cell {
+    padding: 0;
+    padding-left: 1em;
+    margin: 0;
+
+    .lunar-table__input {
+      width: 100%;
+      height: 100%;
+      color: #2c3e50;
+      border: 0;
+    }
+  }
+}
+</style>

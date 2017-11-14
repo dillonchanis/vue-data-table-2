@@ -1,7 +1,20 @@
 <template>
   <div class="lunar-table__grouping">
-    <div class="lunar-table__group-indicator" v-for="group in groupingRows" :key="group.id">
-      <button class="l-btn" @click="remove(group.value)">&times; {{ group.label }}</button>
+    <div v-if="groupingRows.length" @dragover.prevent
+         @dragover="active = true"
+         @dragleave="active = false"
+         @drop="add">
+      <div class="lunar-table__group-indicator" v-for="group in groupingRows" :key="group.id">
+        <button class="l-btn" @click="remove(group.value)">&times; {{ group.label }}</button>
+      </div>
+    </div>
+    <div v-else
+         class="lunar-table__dropzone"
+         @dragover.prevent
+         @dragover="active = true"
+         @dragleave="active = false"
+         @drop="add">
+      <em>Drag a column header and drop it here to group by that column</em>
     </div>
   </div>
 </template>
@@ -19,19 +32,29 @@ export default {
   },
   data () {
     return {
-      isActive: false
+      active: false
     }
   },
   methods: {
+    add () {
+      this.$emit('addGrouping')
+    },
     remove (group) {
       this.$emit('removeGroup', group)
     }
+  },
+  mounted () {
+    this.active = this.dropzoneActive
   }
 }
 </script>
 
 <style lang="scss" scoped>
 .lunar-table {
+  &__dropzone {
+    padding: 0.5em 1em;
+  }
+
   &__grouping {
     background-color: #e8e8e8;
     box-shadow: inset 0 0 8px 0px rgba(112, 97, 97, 0.15)

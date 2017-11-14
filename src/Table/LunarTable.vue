@@ -15,9 +15,10 @@
     <div class="column__select" v-if="settings.open">
       <ul class="list list--inline">
         <li class="list-item" v-for="column in columns" :key="column.key">
-          <label>
+          <label class="control control--checkbox">
             <input type="checkbox" v-model="column.active" />
             {{ column.label }}
+            <div class="control__indicator"></div>
           </label>
         </li>
       </ul>
@@ -26,19 +27,10 @@
     <l-table-group v-if="withGrouping"
       :groupingRows="groupingRows"
       :dropzoneActive="grouping.dropzoneActive"
-      @dropGroup="addGrouping"
+      @addGrouping="addGrouping"
       @removeGroup="removeGroup" />
 
     <figure class="lunar-table__wrapper">
-      <div v-show="grouping.dropzoneActive" class="lunar-table__overlay">
-        <div class="lunar-table__overlay-item">
-          <fa-icon name="plus-square" scale="4"></fa-icon>
-        </div>
-        <div class="lunar-table__overlay-item">
-          Add Group
-        </div>
-      </div>
-
       <table id="l-table-content"
              role="grid"
              tabindex="0"
@@ -47,17 +39,26 @@
 
         <thead class="lunar-table__head">
           <tr class="lunar-table__row" role="row">
+            <th v-if="multiSelect">
+              <label class="control control--checkbox">
+                <input class="lunar-table__checkbox" type="checkbox" @change="toggleSelectAll" :checked="rows.length === selected.records.length">
+                <div class="control__indicator"></div>
+              </label>
+            </th>
             <th v-for="column in columns"
                 v-if="column.active"
                 :key="column.value"
                 class="lunar-table__head-item"
                 :class="{ 'head-item--active': sort.by === column.value }"
                 role="columnheader"
+                tabindex="0"
+                :aria-sort="getAriaSort(column)"
                 :draggable="withGrouping"
                 @dragover="grouping.dropzoneActive = true"
                 @dragleave="grouping.dropzoneActive = false"
                 @dragstart="dragStart(column)"
-                @click="sortTable(column)">
+                @click="sortTable(column)"
+                @keyup.enter="sortTable(column)">
                 <fa-icon v-if="sort.by === column.value"
                          scale="0.9"
                          :name="sort.order === 'asc' ? 'sort-asc' : 'sort-desc'"></fa-icon>
@@ -66,14 +67,16 @@
           </tr>
         </thead>
 
-        <tbody v-if="rows.length" class="lunar-table__body"
-             @dragover.prevent
-             @dragover="grouping.dropzoneActive = true"
-             @dragleave="grouping.dropzoneActive = false"
-             @drop="addGrouping">
+        <tbody v-if="rows.length" class="lunar-table__body">
           <template v-for="row in rows">
-            <l-table-header-cell v-if="row._grouped.length" :row="row" :key="row.id" />
-            <tr class="lunar-table__row" role="row" :key="row.id">
+            <l-table-header-cell v-if="row._grouped.length" :row="row" :key="row.id" :groups="groupingRows" />
+            <tr class="lunar-table__row" role="row" :key="row.id" @click="selectRow(row)">
+              <td class="center" v-if="multiSelect">
+                <label class="control control--checkbox">
+                  <input class="lunar-table__checkbox" type="checkbox" :value="row.id" v-model="selected.records" />
+                  <div class="control__indicator"></div>
+                </label>
+              </td>
               <l-table-cell v-for="column in columns"
                 :key="column.id"
                 :column="column"
@@ -86,6 +89,11 @@
 
       </table>
     </figure>
+
+    <pre>
+      {{  selected.record }}
+    </pre>
+
     <div class="lunar-table__page-size-container">
       <l-table-page-size :pageSizes="pagination.pageSizes" @change="updatePageSize" />
       <l-table-pagination :pagination="pagination" @pageSwitch="updatePagination" />
@@ -186,6 +194,10 @@ export default {
 
   data () {
     return {
+      edit: {
+        row: null,
+        form: {}
+      },
       filter: '',
       grouping: {
         current: [],
@@ -207,7 +219,7 @@ export default {
       },
       selected: {
         records: [],
-        all: false
+        record: {}
       },
       sort: {
         by: this.sortBy,
@@ -283,6 +295,13 @@ export default {
     dragStart (column) {
       this.grouping.dragColumn = column
     },
+    editRow (row) {
+      this.edit.row = row.id
+      this.edit.form = row
+    },
+    getAriaSort (column) {
+      return this.sort.by === column.value ? this.sort.order : 'none'
+    },
     getRecords () {
       if (this.datasource.url) {
         return axios.get(`${this.datasource.url}?_start=0&_limit=${this.pagination.total}`)
@@ -307,9 +326,26 @@ export default {
       const index = this.grouping.current.indexOf(value)
       this.grouping.current.splice(index, 1)
     },
+    selectRow (row) {
+      if (_.isEqual(this.selected.record, row)) {
+        this.selected.record = {}
+        return
+      }
+
+      this.selected.record = {}
+      this.selected.record = row
+    },
     sortTable (column) {
       this.sort.by = column.value
       this.sort.order = this.sort.order === 'asc' ? 'desc' : 'asc'
+    },
+    toggleSelectAll () {
+      if (this.selected.records.length) {
+        this.selected.records = []
+        return
+      }
+
+      this.selected.records = _.map(this.rows, 'id')
     },
     updateFilter (filter) {
       this.filter = filter
@@ -331,6 +367,10 @@ export default {
 </script>
 
 <style lang="scss">
+.center {
+  text-align: center;
+}
+
 .sr-only {
   position: absolute;
   width: 1px;
@@ -362,6 +402,73 @@ export default {
   padding: 6px 12px;
 }
 
+.control {
+  display: block;
+  min-width: 25px;
+  position: relative;
+  cursor: pointer;
+  font-size: 1.1em;
+
+  input {
+    position: absolute;
+    z-index: -1;
+    opacity: 0;
+  }
+
+  &__indicator {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 15px;
+    height: 15px;
+    border-radius: 3px;
+    background: #e6e6e6;
+  }
+}
+
+.control:hover input ~ .control__indicator,
+.control input:focus ~ .control__indicator {
+	background: #ccc;
+}
+
+.control input:checked ~ .control__indicator {
+	background: #2c3e50;
+}
+
+.control input:disabled ~ .control__indicator {
+	pointer-events: none;
+	opacity: .6;
+	background: #e6e6e6;
+}
+
+.control__indicator:after {
+	position: absolute;
+	display: none;
+	content: '';
+}
+
+/* Show check mark */
+.control input:checked ~ .control__indicator:after {
+	display: block;
+}
+
+/* Checkbox tick */
+.control--checkbox .control__indicator:after {
+  top: 1.5px;
+  left: 5px;
+  width: 3px;
+  height: 7px;
+  transform: rotate(42deg);
+  border: solid #fff;
+  border-width: 0px 2px 2px 0;
+}
+
+/* Disabled tick colour */
+.control--checkbox input:disabled ~ .control__indicator:after {
+	border-color: #7b7b7b;
+}
+
 @media print {
   body {
     font-size: 6pt;
@@ -386,6 +493,10 @@ export default {
 </style>
 
 <style lang="scss" scoped>
+* {
+  box-sizing: border-box;
+}
+
 .lunar-table {
   width: 100%;
   border-collapse: collapse;
@@ -406,22 +517,26 @@ export default {
     padding: 0;
   }
 
+  &__checkbox {
+
+  }
+
+  &__dropzone {
+    background-color: #efefef;
+  }
+
   &.overlay-active {
     filter: blur(3px);
   }
 
   &__overlay {
-    position: absolute;
     width: 100%;
-    height: 100%;
     display: flex;
-    justify-content: center;
-    align-items: center;
+    padding: 0.5em 1em;
     flex-direction: column;
-    background: rgba(0,0,0,0.25);
-    color: #333;
-    border-radius: 4px;
-    pointer-events: none;
+    background: rgba(0, 0, 0, 0.05);
+    font-size: 0.9em;
+    color: #2c3e50;
   }
 
   &__head {

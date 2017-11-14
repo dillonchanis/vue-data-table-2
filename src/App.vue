@@ -10,6 +10,7 @@
     <l-table :columns="columns"
              :datasource="datasource"
              with-filter
+             multiSelect
              with-grouping>
     </l-table>
   </div>

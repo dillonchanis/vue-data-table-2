@@ -5,6 +5,10 @@ export default {
     row: {
       type: Object,
       required: true
+    },
+    groups: {
+      type: Array,
+      required: true
     }
   },
   render (h, context) {
