@@ -56,8 +56,7 @@ export default {
   }
 
   &__grouping {
-    background-color: #e8e8e8;
-    box-shadow: inset 0 0 8px 0px rgba(112, 97, 97, 0.15)
+    border-top: 2px solid #EFF0F0;
   }
 
   &__group-indicator {

@@ -15,10 +15,9 @@
     <div class="column__select" v-if="settings.open">
       <ul class="list list--inline">
         <li class="list-item" v-for="column in columns" :key="column.key">
-          <label class="control control--checkbox">
+          <label>
             <input type="checkbox" v-model="column.active" />
             {{ column.label }}
-            <div class="control__indicator"></div>
           </label>
         </li>
       </ul>
@@ -90,14 +89,23 @@
       </table>
     </figure>
 
-    <pre>
-      {{  selected.record }}
-    </pre>
-
     <div class="lunar-table__page-size-container">
       <l-table-page-size :pageSizes="pagination.pageSizes" @change="updatePageSize" />
       <l-table-pagination :pagination="pagination" @pageSwitch="updatePagination" />
     </div>
+
+    <transition name="lunar-slide-from-right" mode="out-in" appear>
+      <div class="lunar-table__side-panel" v-if="withDSP && hasRecordSelected">
+        <header class="side-panel__header">
+          Selected Item <span @click="selected.record = {}" class="l-close">&times;</span>
+        </header>
+        <div class="side-panel__body">
+          <div v-for="(value, key) in selected.record" :key="key">
+            <strong>{{ key }}</strong>: {{ value }}
+          </div>
+        </div>
+      </div>
+    </transition>
   </div>
 </template>
 
@@ -178,6 +186,10 @@ export default {
       type: String,
       default: 'id'
     },
+    withDSP: {
+      type: Boolean,
+      default: true
+    },
     withFilter: {
       type: Boolean,
       default: false
@@ -189,6 +201,10 @@ export default {
     withPageSize: {
       type: Boolean,
       default: true
+    },
+    withPagination: {
+      type: Boolean,
+      default: false
     }
   },
 
@@ -281,6 +297,9 @@ export default {
       }
 
       return this.paginate(data)
+    },
+    hasRecordSelected () {
+      return !_.isEmpty(this.selected.record)
     }
   },
 
@@ -391,6 +410,19 @@ export default {
   clip: auto;
 }
 
+.l-close {
+  float: right;
+  color: #aaa;
+  font-size: 1.3em;
+  cursor: pointer;
+  line-height: 1;
+  transition: color 0.15s ease;
+
+  &:hover {
+    color: #2c3e50;
+  }
+}
+
 .l-btn {
   background: transparent;
   border: 2px solid #ccc;
@@ -422,8 +454,9 @@ export default {
     transform: translate(-50%, -50%);
     width: 15px;
     height: 15px;
-    border-radius: 3px;
-    background: #e6e6e6;
+    border-radius: 2px;
+    background: #fff;
+    border: 1px solid #e6e6e6;
   }
 }
 
@@ -433,7 +466,7 @@ export default {
 }
 
 .control input:checked ~ .control__indicator {
-	background: #2c3e50;
+	background: #e6e6e6;
 }
 
 .control input:disabled ~ .control__indicator {
@@ -457,16 +490,46 @@ export default {
 .control--checkbox .control__indicator:after {
   top: 1.5px;
   left: 5px;
-  width: 3px;
-  height: 7px;
+  width: 2px;
+  height: 6px;
   transform: rotate(42deg);
-  border: solid #fff;
+  border: solid #2c3e50;
   border-width: 0px 2px 2px 0;
 }
 
 /* Disabled tick colour */
 .control--checkbox input:disabled ~ .control__indicator:after {
 	border-color: #7b7b7b;
+}
+
+.lunar-slide-from-right-enter-active {
+  animation: slide-in 250ms ease-out;
+}
+
+.lunar-slide-from-right-leave-active {
+  animation: slide-out 250ms ease-out;
+}
+
+@keyframes slide-in {
+    from {
+      transform: translateX(400px);
+      opacity: 0
+    }
+    to {
+      transform: translateX(0);
+      opacity: 1;
+    }
+}
+
+@keyframes slide-out {
+    from {
+      transform: translateX(0);
+      opacity: 1;
+    }
+    to {
+      transform: translateX(400px);
+      opacity: 0;
+    }
 }
 
 @media print {
@@ -503,9 +566,11 @@ export default {
   border-bottom: 2px solid #EFF0F0;
 
   &__container {
+    position: relative;
     background-color: #FCFCFC;
     border-radius: 4px;
     box-shadow: 0 10px 40px 0 rgba(62,57,107,0.07), 0 2px 9px 0 rgba(62,57,107,0.06);
+    overflow: hidden;
   }
 
   &__wrapper {
@@ -517,8 +582,30 @@ export default {
     padding: 0;
   }
 
-  &__checkbox {
+  &__side-panel {
+    position: absolute;
+    top: 0;
+    right: 0;
+    height: 100%;
+    border-left: 1px solid rgba(44, 62, 80, 0.15);
+    background-color: #F7F7F7;
+    width: 400px;
+    border-radius: 4px;
+    box-shadow: -6px 0 15px 0 rgba(50, 44, 105, 0.11);
+    z-index: 10;
 
+    .side-panel {
+      &__header {
+        background-color: #FCFCFC;
+        border-bottom: 1px solid #E7E7E7;
+        padding: 1em;
+        font-weight: bold;
+      }
+
+      &__body {
+        padding: 1em;
+      }
+    }
   }
 
   &__dropzone {
@@ -592,7 +679,7 @@ export default {
   &__cell,
   .grouped-row-header {
     padding: 0.25em 0.5em 0.25em 1em;
-    line-height: 1.6
+    line-height: 1.5
   }
 
 }
