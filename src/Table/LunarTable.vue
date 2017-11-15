@@ -101,7 +101,9 @@
         </header>
         <div class="side-panel__body">
           <div v-for="(value, key) in selected.record" :key="key">
-            <strong>{{ key }}</strong>: {{ value }}
+            <template v-if="key !== '_grouped'">
+              <strong>{{ key }}</strong>: {{ value }}
+            </template>
           </div>
         </div>
       </div>
@@ -577,9 +579,10 @@ export default {
     position: relative;
     width: 100%;
     max-width: 100%;
-    overflow-x: auto;
     margin: 0;
     padding: 0;
+    overflow-x: auto;
+    overflow-y: hidden;
   }
 
   &__side-panel {
@@ -645,6 +648,10 @@ export default {
 
   }
 
+  &__row {
+    border-bottom: 1px solid #e7e7e7;
+  }
+
   &__group-indicator {
     display: inline-block;
     border: 1px solid #333;
@@ -678,7 +685,7 @@ export default {
 
   &__cell,
   .grouped-row-header {
-    padding: 0.25em 0.5em 0.25em 1em;
+    padding: 0.5em 0.5em 0.5em 1em;
     line-height: 1.5
   }
 

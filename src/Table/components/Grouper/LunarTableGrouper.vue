@@ -5,7 +5,7 @@
          @dragleave="active = false"
          @drop="add">
       <div class="lunar-table__group-indicator" v-for="group in groupingRows" :key="group.id">
-        <button class="l-btn" @click="remove(group.value)">&times; {{ group.label }}</button>
+        <button class="l-btn" @click="remove(group.value)">{{ group.label }} &times;</button>
       </div>
     </div>
     <div v-else
@@ -52,6 +52,7 @@ export default {
 <style lang="scss" scoped>
 .lunar-table {
   &__dropzone {
+    font-size: 0.9em;
     padding: 0.5em 1em;
   }
 
@@ -67,7 +68,8 @@ export default {
 
     .l-btn {
       height: 32px;
-      background: #FCFCFC;
+      color: #fff;
+      background: #007bff;
       border-radius: 0;
       border: none;
       border-left: 3px solid #007bff;

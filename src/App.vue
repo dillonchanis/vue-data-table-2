@@ -48,6 +48,10 @@ export default {
 </script>
 
 <style>
+html, body {
+  background: #fff;
+}
+
 #app {
   font-family: 'Avenir', Helvetica, Arial, sans-serif;
   -webkit-font-smoothing: antialiased;
@@ -55,6 +59,5 @@ export default {
   font-size: 16px;
   color: #2c3e50;
   padding: 25px;
-  background: #fefefe;
 }
 </style>
