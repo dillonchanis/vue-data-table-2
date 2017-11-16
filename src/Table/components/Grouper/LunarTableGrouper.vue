@@ -36,8 +36,9 @@ export default {
     }
   },
   methods: {
-    add () {
-      this.$emit('addGrouping')
+    add (e) {
+      e.preventDefault() // FF Invalid URL Fix
+      this.$emit('addGrouping', e)
     },
     remove (group) {
       this.$emit('removeGroup', group)

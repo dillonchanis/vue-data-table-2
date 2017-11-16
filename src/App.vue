@@ -37,12 +37,6 @@ export default {
         url: 'https://jsonplaceholder.typicode.com/comments'
       }
     }
-  },
-  created () {
-    // axios.get('https://jsonplaceholder.typicode.com/comments?_start=0&_limit=25')
-    //   .then(response => {
-    //     this.datasource.records = response.data
-    //   })
   }
 }
 </script>

@@ -1,14 +1,14 @@
 <template>
-  <td v-if="edit" class="lunar-table__editable-cell lunar-table__cell" :colspan="colSpan" @keyup.enter="edit = false">
+  <td v-if="editID === row.id" class="lunar-table__editable-cell lunar-table__cell" :colspan="colSpan">
     <input type="text" class="lunar-table__input" v-model="row[column.value]">
   </td>
-  <td class="lunar-table__cell" v-else-if="column.active" :colspan="colSpan" @dblclick="edit = !edit">
+  <td class="lunar-table__cell" v-else-if="column.active" :colspan="colSpan" @dblclick="editRow(row)">
     {{ value(row, column.value) }}
   </td>
 </template>
 
 <script>
-import _ from 'lodash'
+import { get } from 'lodash'
 
 export default {
   name: 'lunar-table-cell',
@@ -17,9 +17,9 @@ export default {
     column: {
       type: Object
     },
-    editable: {
-      type: Boolean,
-      default: false
+    editID: {
+      type: Number,
+      default: null
     },
     grouping: {
       type: Array
@@ -32,15 +32,12 @@ export default {
     }
   },
 
-  data () {
-    return {
-      edit: false
-    }
-  },
-
   methods: {
+    editRow (row) {
+      this.$emit('toggleEdit', row)
+    },
     value (row, column) {
-      return _.get(row, column)
+      return get(row, column)
     }
   },
 

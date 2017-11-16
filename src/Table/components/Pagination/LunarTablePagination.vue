@@ -95,6 +95,7 @@ export default {
 .pagination__container {
   display: inline-flex;
   margin-right: 15px;
+  margin-top: -8px;
 }
 .pagination {
   display: flex;

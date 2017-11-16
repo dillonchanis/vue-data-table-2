@@ -55,7 +55,7 @@
                 :draggable="withGrouping"
                 @dragover="grouping.dropzoneActive = true"
                 @dragleave="grouping.dropzoneActive = false"
-                @dragstart="dragStart(column)"
+                @dragstart="dragStart($event, column)"
                 @click="sortTable(column)"
                 @keyup.enter="sortTable(column)">
                 <fa-icon v-if="sort.by === column.value"
@@ -81,7 +81,8 @@
                 :column="column"
                 :grouping="grouping.current"
                 :row="row"
-                :editable="editable" />
+                @toggleEdit="editRow"
+                :editID="edit.row" />
             </tr>
           </template>
         </tbody>
@@ -313,8 +314,9 @@ export default {
 
       this.grouping.dropzoneActive = false
     },
-    dragStart (column) {
+    dragStart (e, column) {
       this.grouping.dragColumn = column
+      e.dataTransfer.setData('text/plain', JSON.stringify(column))
     },
     editRow (row) {
       this.edit.row = row.id
