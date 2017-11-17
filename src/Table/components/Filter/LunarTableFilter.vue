@@ -2,14 +2,14 @@
   <div class="lunar-table__filter">
     <label class="sr-only" for="filter">Filter</label>
     <input tabindex="0"
-            aria-label="Search"
-            placeholder="Search"
-            id="filter"
-            name="filter"
-            class="lunar-table__input"
-            type="text"
-            :query="query"
-            @input="updateQuery" />
+           aria-label="Search"
+           placeholder="Search"
+           id="filter"
+           name="filter"
+           class="lunar-table__input"
+           type="text"
+           :query="query"
+           @input="updateQuery" />
   </div>
 </template>
 
@@ -39,14 +39,20 @@
 
   &__input {
     width: 90%;
+    color: inherit;
     max-width: 100%;
     height: 100%;
     background-color: transparent;
     padding: 0 12px;
-    border: 0;
-    outline: none;
     font-size: 1em;
-    box-shadow: none;
+    outline: 0;
+    border: none;
+    border-radius: 3px;
+    transition: border 0.3 ease;
+
+    &:focus {
+      border: 1px solid #8C5BDC;
+    }
   }
 }
 </style>

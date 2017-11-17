@@ -17,7 +17,7 @@
 </template>
 
 <script>
-// import axios from 'axios'
+import axios from 'axios'
 import LTable from './Table/LunarTable'
 
 export default {
@@ -31,12 +31,19 @@ export default {
         { id: 1, label: 'ID', value: 'id', title: 'Identification', active: true },
         { id: 2, label: 'Name', value: 'name', title: 'Name', active: true },
         { id: 3, label: 'Email', value: 'email', title: 'Email', active: true },
-        { id: 4, label: 'PostID', value: 'postId', title: 'PostID', active: true }
+        { id: 4, label: 'PostID', value: 'postId', title: 'PostID', active: false }
       ],
       datasource: {
-        url: 'https://jsonplaceholder.typicode.com/comments'
+        // url: 'https://jsonplaceholder.typicode.com/comments'
+        records: []
       }
     }
+  },
+  mounted () {
+    axios.get('https://jsonplaceholder.typicode.com/comments?_limit=25')
+      .then(response => {
+        this.datasource.records = response.data
+      })
   }
 }
 </script>
@@ -51,7 +58,7 @@ html, body {
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   font-size: 16px;
-  color: #2c3e50;
+  color: #2D2B49;
   padding: 25px;
 }
 </style>

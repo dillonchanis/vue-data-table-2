@@ -29,7 +29,7 @@
       @addGrouping="addGrouping"
       @removeGroup="removeGroup" />
 
-    <figure class="lunar-table__wrapper">
+    <figure class="lunar-table__wrapper" :style="{ height: height }">
       <table id="l-table-content"
              role="grid"
              tabindex="0"
@@ -119,7 +119,7 @@ import LTableCell from './components/LunarTableDataCell'
 
 // Libraries
 import _ from 'lodash'
-import axios from 'axios'
+// import axios from 'axios'
 
 // Addons
 import LTableFilter from './components/Filter/LunarTableFilter'
@@ -160,6 +160,10 @@ export default {
     groupTextSeparator: {
       type: String,
       default: '-'
+    },
+    height: {
+      type: String,
+      default: '450px'
     },
     limit: {
       type: Number,
@@ -326,20 +330,22 @@ export default {
       return this.sort.by === column.value ? this.sort.order : 'none'
     },
     getRecords () {
-      if (this.datasource.url) {
-        return axios.get(`${this.datasource.url}?_start=0&_limit=${this.pagination.total}`)
-          .then((response) => {
-            this.response.data = response.data
-          })
-          .catch((error) => {
-            this.response.errors = error
-          })
-      } else if (this.datasource.records.length && !this.datasource.url) {
-        this.response.records = this.datasource.records
-        return
-      }
+      // if (this.datasource.url) {
+      //   return axios.get(`${this.datasource.url}?_start=0&_limit=${this.pagination.total}`)
+      //     .then((response) => {
+      //       this.response.data = response.data
+      //     })
+      //     .catch((error) => {
+      //       this.response.errors = error
+      //     })
+      // } else if (this.datasource.records.length && !this.datasource.url) {
+      //   this.response.data = this.datasource.records
+      //   return
+      // }
 
-      console.warn('You must provide a datasource URL or an array of records.')
+      this.response.data = this.datasource.records
+
+      console.warn('[LunarTable]: You must provide a datasource URL or an array of records.')
     },
     paginate (records) {
       const offset = (this.pagination.current - 1) * this.pagination.limit
@@ -423,7 +429,7 @@ export default {
   transition: color 0.15s ease;
 
   &:hover {
-    color: #2c3e50;
+    color: #8C5BDC;
   }
 }
 
@@ -460,17 +466,17 @@ export default {
     height: 15px;
     border-radius: 2px;
     background: #fff;
-    border: 1px solid #e6e6e6;
+    border: 1px solid #2D2B49;
   }
 }
 
 .control:hover input ~ .control__indicator,
 .control input:focus ~ .control__indicator {
-	background: #ccc;
+	background: #2D2B49;
 }
 
 .control input:checked ~ .control__indicator {
-	background: #e6e6e6;
+	background: #2D2B49;
 }
 
 .control input:disabled ~ .control__indicator {
@@ -497,7 +503,7 @@ export default {
   width: 2px;
   height: 6px;
   transform: rotate(42deg);
-  border: solid #2c3e50;
+  border: solid lighten(#8C5BDC, 35%);
   border-width: 0px 2px 2px 0;
 }
 
@@ -539,7 +545,7 @@ export default {
 @media print {
   body {
     font-size: 6pt;
-    color: #000;
+    color: #333;
     background-color: #fff;
     background-image: none;
     margin: 0;
@@ -584,7 +590,7 @@ export default {
     margin: 0;
     padding: 0;
     overflow-x: auto;
-    overflow-y: hidden;
+    overflow-y: auto;
   }
 
   &__side-panel {
@@ -619,16 +625,6 @@ export default {
 
   &.overlay-active {
     filter: blur(3px);
-  }
-
-  &__overlay {
-    width: 100%;
-    display: flex;
-    padding: 0.5em 1em;
-    flex-direction: column;
-    background: rgba(0, 0, 0, 0.05);
-    font-size: 0.9em;
-    color: #2c3e50;
   }
 
   &__head {
@@ -677,7 +673,7 @@ export default {
     margin-right: 15px;
 
     .options-link {
-      color: #2c3e50;
+      color: #2D2B49;
     }
   }
 

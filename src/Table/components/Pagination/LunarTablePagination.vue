@@ -108,8 +108,8 @@ export default {
     &.active .pagination__link {
       z-index: 2;
       color: #fff;
-      background-color: #2c3e50;
-      border-color: #2c3e50;
+      background-color: #8C5BDC;
+      border-color: #8C5BDC;
     }
     &.disabled {
       cursor: not-allowed;
@@ -137,7 +137,7 @@ export default {
     padding: 2px 8px;
     margin-left: -1px;
     line-height: 1.25;
-    color: #2c3e50;
+    color: #8C5BDC;
     background-color: #fff;
     border: 1px solid #ddd;
     text-decoration: none;

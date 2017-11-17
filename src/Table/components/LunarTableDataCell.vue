@@ -1,5 +1,5 @@
 <template>
-  <td v-if="editID === row.id" class="lunar-table__editable-cell lunar-table__cell" :colspan="colSpan">
+  <td v-if="editID === row.id" class="lunar-table__cell--editable lunar-table__cell" :colspan="colSpan">
     <input type="text" class="lunar-table__input" v-model="row[column.value]">
   </td>
   <td class="lunar-table__cell" v-else-if="column.active" :colspan="colSpan" @dblclick="editRow(row)">
@@ -51,16 +51,26 @@ export default {
 .lunar-table__cell {
   height: 100%;
 
-  &.lunar-table__editable-cell {
+  &--editable {
     padding: 0;
-    padding-left: 1em;
     margin: 0;
+    padding-left: 1em;
 
     .lunar-table__input {
+      display: block;
       width: 100%;
       height: 100%;
-      color: #2c3e50;
-      border: 0;
+      padding: 0.5em 0.25em;
+      background-color: transparent;
+      color: #2D2B49;
+      border: 1px solid #8C5BDC;
+      border-radius: 0;
+
+      &:focus {
+        outline: 0;
+        border-color: #8C5BDC;
+        box-shadow: 0 0 0 0.2em rgba(148, 68, 218, 0.25);
+      }
     }
   }
 }

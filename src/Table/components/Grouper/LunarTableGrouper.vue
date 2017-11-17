@@ -1,6 +1,7 @@
 <template>
   <div class="lunar-table__grouping">
-    <div v-if="groupingRows.length" @dragover.prevent
+    <div v-if="groupingRows.length"
+         @dragover.prevent
          @dragover="active = true"
          @dragleave="active = false"
          @drop="add">
@@ -70,10 +71,9 @@ export default {
     .l-btn {
       height: 32px;
       color: #fff;
-      background: #007bff;
+      background: #8C5BDC;
       border-radius: 0;
       border: none;
-      border-left: 3px solid #007bff;
       box-shadow: 0 2px 6px 0 rgba(62,57,107,0.2);
     }
   }
