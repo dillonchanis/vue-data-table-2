@@ -46,7 +46,7 @@
     padding: 0 12px;
     font-size: 1em;
     outline: 0;
-    border: none;
+    border: 1px solid transparent;
     border-radius: 3px;
     transition: border 0.3 ease;
 

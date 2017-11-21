@@ -8,7 +8,9 @@
       </template>
     </l-table> -->
     <l-table :columns="columns"
-             :datasource="datasource"
+             :datasource="datasource.records"
+             height="400px"
+             editable
              with-filter
              multiSelect
              with-grouping>
@@ -34,12 +36,11 @@ export default {
         { id: 4, label: 'PostID', value: 'postId', title: 'PostID', active: false }
       ],
       datasource: {
-        // url: 'https://jsonplaceholder.typicode.com/comments'
         records: []
       }
     }
   },
-  mounted () {
+  created () {
     axios.get('https://jsonplaceholder.typicode.com/comments?_limit=25')
       .then(response => {
         this.datasource.records = response.data

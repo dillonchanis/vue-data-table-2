@@ -63,6 +63,9 @@
                          :name="sort.order === 'asc' ? 'sort-asc' : 'sort-desc'"></fa-icon>
                 {{ column.label }}
             </th>
+            <th v-if="editable">
+              &nbsp;
+            </th>
           </tr>
         </thead>
 
@@ -76,13 +79,29 @@
                   <div class="control__indicator"></div>
                 </label>
               </td>
-              <l-table-cell v-for="column in columns"
+              <l-table-cell
+                v-for="column in columns"
                 :key="column.id"
                 :column="column"
                 :grouping="grouping.current"
                 :row="row"
                 @toggleEdit="editRow"
                 :editID="edit.row" />
+
+              <td v-if="editable && row.id !== edit.row">
+                <a href="#" @click.prevent="editRow(row)">
+                  <fa-icon name="edit" />
+                </a>
+              </td>
+              <td v-else-if="editable">
+                <a href="#" @click.prevent="saveEdit">
+                  <fa-icon name="save" />
+                </a>
+                &nbsp;
+                <a href="#" @click.prevent="cancelRowEdit">
+                  &times;
+                </a>
+              </td>
             </tr>
           </template>
         </tbody>
@@ -95,7 +114,7 @@
       <l-table-pagination :pagination="pagination" @pageSwitch="updatePagination" />
     </div>
 
-    <transition name="lunar-slide-from-right" mode="out-in" appear>
+    <transition name="lunar-slide-from-right" mode="out-in">
       <div class="lunar-table__side-panel" v-if="withDSP && hasRecordSelected">
         <header class="side-panel__header">
           Selected Item <span @click="selected.record = {}" class="l-close">&times;</span>
@@ -132,6 +151,8 @@ import 'vue-awesome/icons/sort-asc'
 import 'vue-awesome/icons/sort-desc'
 import 'vue-awesome/icons/cog'
 import 'vue-awesome/icons/plus-square'
+import 'vue-awesome/icons/edit'
+import 'vue-awesome/icons/save'
 
 export default {
   name: 'lunar-table',
@@ -195,7 +216,7 @@ export default {
     },
     withDSP: {
       type: Boolean,
-      default: true
+      default: false
     },
     withFilter: {
       type: Boolean,
@@ -256,7 +277,7 @@ export default {
       return this.grouping.current.map(columnVal => this.columns.find(column => column.value === columnVal))
     },
     rows () {
-      let data = this.response.data
+      let data = this.response.data.length ? this.response.data : this.datasource
 
       data = data.map(rows => {
         return Object.assign(rows, {
@@ -318,6 +339,10 @@ export default {
 
       this.grouping.dropzoneActive = false
     },
+    cancelRowEdit () {
+      this.edit.form = {}
+      this.edit.row = null
+    },
     dragStart (e, column) {
       this.grouping.dragColumn = column
       e.dataTransfer.setData('text/plain', JSON.stringify(column))
@@ -330,22 +355,7 @@ export default {
       return this.sort.by === column.value ? this.sort.order : 'none'
     },
     getRecords () {
-      // if (this.datasource.url) {
-      //   return axios.get(`${this.datasource.url}?_start=0&_limit=${this.pagination.total}`)
-      //     .then((response) => {
-      //       this.response.data = response.data
-      //     })
-      //     .catch((error) => {
-      //       this.response.errors = error
-      //     })
-      // } else if (this.datasource.records.length && !this.datasource.url) {
-      //   this.response.data = this.datasource.records
-      //   return
-      // }
-
-      this.response.data = this.datasource.records
-
-      console.warn('[LunarTable]: You must provide a datasource URL or an array of records.')
+      this.response.data = this.datasource
     },
     paginate (records) {
       const offset = (this.pagination.current - 1) * this.pagination.limit
@@ -354,6 +364,10 @@ export default {
     removeGroup (value) {
       const index = this.grouping.current.indexOf(value)
       this.grouping.current.splice(index, 1)
+    },
+    saveEdit () {
+      this.$emit('saveEdit', this.edit.form)
+      this.cancelRowEdit()
     },
     selectRow (row) {
       if (_.isEqual(this.selected.record, row)) {
@@ -389,13 +403,17 @@ export default {
     }
   },
 
-  mounted () {
+  created () {
     this.getRecords()
   }
 }
 </script>
 
 <style lang="scss">
+* {
+  box-sizing: border-box;
+}
+
 .center {
   text-align: center;
 }
@@ -407,7 +425,7 @@ export default {
   padding: 0;
   margin: -1px;
   overflow: hidden;
-  clip: rect(0,0,0,0);
+  clip: rect(0, 0, 0, 0);
   border: 0;
 }
 
@@ -466,17 +484,17 @@ export default {
     height: 15px;
     border-radius: 2px;
     background: #fff;
-    border: 1px solid #2D2B49;
+    border: 1px solid #8C5BDC;
   }
 }
 
 .control:hover input ~ .control__indicator,
 .control input:focus ~ .control__indicator {
-	background: #2D2B49;
+	background: #8C5BDC;
 }
 
 .control input:checked ~ .control__indicator {
-	background: #2D2B49;
+	background: #8C5BDC;
 }
 
 .control input:disabled ~ .control__indicator {
@@ -499,7 +517,7 @@ export default {
 /* Checkbox tick */
 .control--checkbox .control__indicator:after {
   top: 1.5px;
-  left: 5px;
+  left: 4.55px;
   width: 2px;
   height: 6px;
   transform: rotate(42deg);
@@ -566,20 +584,17 @@ export default {
 </style>
 
 <style lang="scss" scoped>
-* {
-  box-sizing: border-box;
-}
-
 .lunar-table {
   width: 100%;
   border-collapse: collapse;
-  border-bottom: 2px solid #EFF0F0;
+  border-bottom: 2px solid #eff0f0;
 
   &__container {
     position: relative;
     background-color: #FCFCFC;
     border-radius: 4px;
-    box-shadow: 0 10px 40px 0 rgba(62,57,107,0.07), 0 2px 9px 0 rgba(62,57,107,0.06);
+    border: 1px solid rgba(221, 221, 221, 0.55);
+    box-shadow: 0 15px 35px rgba(50,50,93,.1), 0 5px 15px rgba(0,0,0,.07);
     overflow: hidden;
   }
 
@@ -655,6 +670,10 @@ export default {
     border: 1px solid #333;
     padding: 6px 12px;
     margin-right: 15px;
+  }
+
+  &__page-size-container {
+    border-top: 1px solid #eff0f0;
   }
 
   &__header,
