@@ -38,7 +38,7 @@
 
         <thead class="lunar-table__head">
           <tr class="lunar-table__row" role="row">
-            <th v-if="multiSelect">
+            <th class="lunar-table__checkbox-container" v-if="multiSelect">
               <label class="control control--checkbox">
                 <input class="lunar-table__checkbox" type="checkbox" @change="toggleSelectAll" :checked="rows.length === selected.records.length">
                 <div class="control__indicator"></div>
@@ -73,20 +73,24 @@
           <template v-for="row in rows">
             <l-table-header-cell v-if="row._grouped.length" :row="row" :key="row.id" :groups="groupingRows" />
             <tr class="lunar-table__row" role="row" :key="row.id" @click="selectRow(row)">
-              <td class="center" v-if="multiSelect">
+              <td class="lunar-table__checkbox-container center" v-if="multiSelect">
                 <label class="control control--checkbox">
                   <input class="lunar-table__checkbox" type="checkbox" :value="row.id" v-model="selected.records" />
                   <div class="control__indicator"></div>
                 </label>
               </td>
-              <l-table-cell
-                v-for="column in columns"
-                :key="column.id"
-                :column="column"
-                :grouping="grouping.current"
-                :row="row"
-                @toggleEdit="editRow"
-                :editID="edit.row" />
+
+              <template v-for="column in columns">
+                <slot :name="column.value" :row="row">
+                  <l-table-cell
+                    :key="column.id"
+                    :column="column"
+                    :grouping="grouping.current"
+                    :row="row"
+                    @toggleEdit="editRow"
+                    :editID="edit.row" />
+                </slot>
+              </template>
 
               <td v-if="editable && row.id !== edit.row">
                 <a href="#" @click.prevent="editRow(row)">
@@ -632,6 +636,10 @@ export default {
         padding: 1em;
       }
     }
+  }
+
+  &__checkbox-container {
+    width: 50px;
   }
 
   &__dropzone {

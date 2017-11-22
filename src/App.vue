@@ -1,18 +1,22 @@
 <template>
   <div id="app">
-    <!-- <l-table :columns="columns" :datasource="datasource">
-      <template slot-scope="props">
-        <td>{{ props.row.id }}</td>
-        <td>{{ props.row.name }}</td>
-        <td>{{ props.row.email }}</td>
-      </template>
+    <!-- <l-table :columns="columns"
+             :datasource="datasource.records"
+             height="400px"
+             editable
+             with-filter
+             multiSelect
+             with-grouping>
+        <td slot="id" slot-scope="props">{{ props.row.id }}</td>
+        <td slot="name" slot-scope="props"><em>{{ props.row.name }}</em></td>
+        <td slot="email" slot-scope="props">{{ props.row.email }}</td>
     </l-table> -->
     <l-table :columns="columns"
              :datasource="datasource.records"
              height="400px"
              editable
              with-filter
-             multiSelect
+             multi-select
              with-grouping>
     </l-table>
   </div>
