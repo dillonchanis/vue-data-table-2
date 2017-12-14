@@ -1,5 +1,5 @@
 <template>
-  <td v-if="editID === row.id && column.active"
+  <td v-if="editID === row.id && column.active && editable"
       class="lunar-table__cell--editable lunar-table__cell"
       :colspan="colSpan">
     <input type="text"
@@ -23,6 +23,10 @@ export default {
   props: {
     column: {
       type: Object
+    },
+    editable: {
+      type: Boolean,
+      default: false
     },
     editID: {
       type: Number,
@@ -55,28 +59,30 @@ export default {
 </script>
 
 <style lang="scss" scoped>
-.lunar-table__cell {
-  height: 100%;
+.theme-default {
+  .lunar-table__cell {
+    height: 100%;
 
-  &--editable {
-    padding: 0;
-    margin: 0;
-    padding-left: 1em;
+    &--editable {
+      padding: 0;
+      margin: 0;
+      padding-left: 1em;
 
-    .lunar-table__input {
-      display: block;
-      width: 100%;
-      height: 100%;
-      padding: 0.5em 0.25em;
-      background-color: transparent;
-      color: #2D2B49;
-      border: 1px solid #8C5BDC;
-      border-radius: 3px;
+      .lunar-table__input {
+        display: block;
+        width: 100%;
+        height: 100%;
+        padding: 0.5em 0.25em;
+        background-color: transparent;
+        color: #2D2B49;
+        border: 1px solid #8C5BDC;
+        border-radius: 3px;
 
-      &:focus {
-        outline: 0;
-        border-color: #8C5BDC;
-        box-shadow: 0 0 0 0.2em rgba(148, 68, 218, 0.25);
+        &:focus {
+          outline: 0;
+          border-color: #8C5BDC;
+          box-shadow: 0 0 0 0.2em rgba(148, 68, 218, 0.25);
+        }
       }
     }
   }

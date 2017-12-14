@@ -31,27 +31,29 @@
 </script>
 
 <style lang="scss" scoped>
-.lunar-table {
-  &__filter {
-    width: 100%;
-    height: 100%;
-  }
+.theme-default {
+  .lunar-table {
+    &__filter {
+      width: 100%;
+      height: 100%;
+    }
 
-  &__input {
-    width: 90%;
-    color: inherit;
-    max-width: 100%;
-    height: 100%;
-    background-color: transparent;
-    padding: 0 12px;
-    font-size: 1em;
-    outline: 0;
-    border: 1px solid transparent;
-    border-radius: 3px;
-    transition: border 0.3 ease;
+    &__input {
+      width: 90%;
+      color: inherit;
+      max-width: 100%;
+      height: 100%;
+      background-color: transparent;
+      padding: 0 12px;
+      font-size: 1em;
+      outline: 0;
+      border: 1px solid transparent;
+      border-radius: 3px;
+      transition: border 0.3 ease;
 
-    &:focus {
-      border: 1px solid #8C5BDC;
+      &:focus {
+        border: 1px solid #8C5BDC;
+      }
     }
   }
 }

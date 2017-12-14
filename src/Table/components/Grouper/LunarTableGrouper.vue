@@ -52,29 +52,31 @@ export default {
 </script>
 
 <style lang="scss" scoped>
-.lunar-table {
-  &__dropzone {
-    font-size: 0.9em;
-    padding: 0.5em 1em;
-  }
+.theme-default {
+  .lunar-table {
+    &__dropzone {
+      font-size: 0.9em;
+      padding: 0.5em 1em;
+    }
 
-  &__grouping {
-    border-top: 2px solid #EFF0F0;
-  }
+    &__grouping {
+      border-top: 2px solid #EFF0F0;
+    }
 
-  &__group-indicator {
-    display: inline-block;
-    margin-right: 10px;
-    padding: 10px 0;
-    padding-left: 1em;
+    &__group-indicator {
+      display: inline-block;
+      margin-right: 10px;
+      padding: 10px 0;
+      padding-left: 1em;
 
-    .l-btn {
-      height: 32px;
-      color: #fff;
-      background: #8C5BDC;
-      border-radius: 0;
-      border: none;
-      box-shadow: 0 2px 6px 0 rgba(62,57,107,0.2);
+      .l-btn {
+        height: 32px;
+        color: #fff;
+        background: #8C5BDC;
+        border-radius: 0;
+        border: none;
+        box-shadow: 0 2px 6px 0 rgba(62,57,107,0.2);
+      }
     }
   }
 }

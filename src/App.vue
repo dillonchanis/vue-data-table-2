@@ -14,11 +14,14 @@
     <l-table :columns="columns"
              :datasource="datasource.records"
              height="400px"
-             editable
              with-filter
              multi-select
+             @select-row="selectRow"
+             @select-all="selectAll"
              with-grouping>
     </l-table>
+
+    <button @click="someAction">Click me</button>
   </div>
 </template>
 
@@ -41,7 +44,20 @@ export default {
       ],
       datasource: {
         records: []
-      }
+      },
+      items: [],
+      anotherSetOfItemslol: []
+    }
+  },
+  methods: {
+    selectRow (payload) {
+      this.items = payload
+    },
+    selectAll (payload) {
+      this.anotherSetOfItemslol = payload
+    },
+    someAction () {
+      alert(JSON.stringify(this.items))
     }
   },
   created () {
